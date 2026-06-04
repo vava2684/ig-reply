@@ -31,7 +31,15 @@
 
 ## 🧠 設計理念 How it works
 
-大多數「自動回留言」工具把付費 AI 寫死在程式裡 — 量大燒錢、語氣難客製。
+在 IG 上經營,常會遇到各國語言的粉絲。雖然我們看得懂翻譯,但要一則一則把留言複製去翻譯、再切回來回覆,實在太麻煩 —— 尤其外語粉絲一多,光是判斷「這則該用哪種語言回」就很頭痛。
+
+這套工具就是為了解決這件事:
+
+- 🌐 **自動判斷該用哪種語言回**每一則留言。
+- 🙂 就算對方只丟表情符號、沒有文字,也能**從帳號名稱推測語言**;真的判斷不出來,就**統一用英文這張安全牌**,絕不亂猜回錯語言。
+- 🤝 還會**記住常來留言的老粉**,給他們更熱情、更熟客的回應 —— 讓路人更容易變成鐵粉,對貼文的**觸及與互動也大有幫助**。
+
+而在「怎麼生成回覆」這件事上,大多數「自動回留言」工具把付費 AI 寫死在程式裡 — 量大燒錢、語氣難客製。
 本工具把流程拆成「程式做苦工、AI 動腦」三段:
 
 ```
@@ -103,6 +111,16 @@ A helper for replying to Instagram comments. The code only **fetches comments** 
 - 🔑 **One-shot OAuth** — `oauth.js` grabs a 60-day long-lived Page token.
 
 ### How it works
+
+Running an IG account means constantly meeting fans who speak different languages. Even if you can read a translation, copying each comment into a translator and back just to reply is a real pain — and the bigger your international audience, the harder it gets to even decide *which* language to answer in.
+
+That's exactly what this tool solves:
+
+- 🌐 It **automatically decides which language to reply in** for every comment.
+- 🙂 Even when someone leaves only emojis, it **guesses their language from their username** — and when it truly can't tell, it **safely falls back to English** instead of guessing wrong.
+- 🤝 It also **remembers your regular commenters** and gives them warmer, familiar replies — turning passers-by into loyal fans and **boosting reach & engagement** along the way.
+
+As for *writing* the replies, most auto-reply tools bake a paid AI endpoint into the program (expensive at scale, hard to fine-tune). This one splits the work instead:
 
 ```
 ①  node fetch.js <postID>   →   pending.json (comments to answer)
