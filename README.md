@@ -7,6 +7,12 @@
 
 繁中 ｜ [English](#-english)
 
+<br>
+
+<img src="assets/demo.png" alt="ig-reply 多語言回覆示意圖" width="760">
+
+<br><sub>一次送出多語言回覆 — 留言 ID 與粉絲暱稱已塗銷 ｜ multilingual replies in one run (comment IDs & handles redacted)</sub>
+
 </div>
 
 ---
@@ -70,6 +76,11 @@ node reply.js               # 逐則送出
 - `pending.json` / `replies.json` / `replied.json` 含**留言者帳號與留言內容(第三方個資)**,同樣已被 `.gitignore` 擋住,請勿公開。
 - 請遵守 Instagram 平台政策,自動化留言頻率請節制。
 
+## ☕ 支持作者 Support
+
+這個工具對你有幫助的話,歡迎來我的粉專逛逛 🐱
+👉 **Facebook**：https://www.facebook.com/VavaAiArtist
+
 ## 授權 License
 
 [MIT](./LICENSE)
@@ -122,6 +133,10 @@ node reply.js               # send them out
 - **Never** commit `.env` (account tokens — already git-ignored).
 - `pending.json` / `replies.json` / `replied.json` hold **commenters' handles and text (third-party PII)** — also git-ignored; don't publish them.
 - Follow Instagram's platform policies; keep automation rates reasonable.
+
+### ☕ Support
+
+If this helped you, come say hi on my Facebook page 🐱 → https://www.facebook.com/VavaAiArtist
 
 ### License
 
