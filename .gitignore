@@ -1,0 +1,15 @@
+# ── 機密:絕不上傳 / SECRETS: never commit ──
+.env
+
+# ── 運作產生的資料(含第三方留言者個資)/ runtime data (contains commenters' PII) ──
+pending.json
+replies.json
+replied.json
+processed_media.json
+
+# ── 相依套件 / dependencies ──
+node_modules/
+
+# ── 雜項 / misc ──
+*.log
+.DS_Store

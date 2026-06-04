@@ -1,0 +1,20 @@
+{
+  "name": "ig-reply",
+  "version": "1.0.0",
+  "description": "Instagram 留言智慧回覆 — 抓資料 + 送出,生成回覆由 Claude 在對話裡完成",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "oauth": "node oauth.js",
+    "test": "node test.js",
+    "fetch": "node fetch.js",
+    "reply": "node reply.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "selfsigned": "^2.4.1"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
