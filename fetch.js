@@ -9,6 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const TOKEN = process.env.FB_PAGE_ACCESS_TOKEN;
 const VERSION = process.env.GRAPH_API_VERSION || 'v22.0';
 const BASE = `https://graph.facebook.com/${VERSION}`;
+const SELF = (process.env.IG_USERNAME || '').toLowerCase(); // 自己帳號,要跳過自己的留言/回覆
 
 const mediaId = process.argv[2];
 if (!mediaId) {
@@ -74,6 +75,18 @@ function loadRepliedSet() {
   }
 }
 
+// skip.json:決定「不回」的留言 id(收尾語/垃圾連結/亂碼),掃描時一律略過,不再重複跳出來洗版
+function loadSkipSet() {
+  const p = path.join(__dirname, 'skip.json');
+  if (!fs.existsSync(p)) return new Set();
+  try {
+    return new Set(Object.keys(JSON.parse(fs.readFileSync(p, 'utf8'))));
+  } catch (e) {
+    console.warn(`⚠️  skip.json 讀取失敗,當作空的處理:${e.message}`);
+    return new Set();
+  }
+}
+
 // 用 /{ig-biz}/media 列表找 metadata(因為直接 GET /{media_id} 有時會回 #10 權限不足)
 const IG_BIZ = process.env.IG_BUSINESS_ACCOUNT_ID;
 
@@ -113,10 +126,11 @@ async function getPostMeta(id) {
     }
 
     const replied = loadRepliedSet();
+    const skip = loadSkipSet();
     const allComments = [];
 
     const firstUrl = new URL(`${BASE}/${mediaId}/comments`);
-    firstUrl.searchParams.set('fields', 'id,username,text,timestamp,like_count');
+    firstUrl.searchParams.set('fields', 'id,username,text,timestamp,like_count,replies.limit(100){id,username,text,timestamp,like_count}');
     firstUrl.searchParams.set('limit', '50');
     firstUrl.searchParams.set('access_token', TOKEN);
     let nextUrl = firstUrl.toString();
@@ -133,22 +147,50 @@ async function getPostMeta(id) {
       }
     }
 
+    // 展開巢狀回覆(有人回覆別人的留言也要抓,才不漏);記住每則的「回覆對象=最上層留言的作者」
+    const flat = [];
+    for (const c of allComments) {
+      flat.push({ c, parent: null });
+      if (Array.isArray(c.replies?.data)) {
+        const pu = (c.username || '').toLowerCase();
+        for (const r of c.replies.data) flat.push({ c: r, parent: pu });
+      }
+    }
+
     const pending = [];
     const emojiOnly = [];
     let skipped = 0;
-    for (const c of allComments) {
+    let ownSkipped = 0;
+    for (const { c, parent } of flat) {
+      if (SELF && (c.username || '').toLowerCase() === SELF) {
+        ownSkipped++; // 自己帳號的留言/回覆(收官語、引導提問、已回的回覆)不算待回覆
+        continue;
+      }
       if (replied.has(c.id)) {
         skipped++;
+        continue;
+      }
+      if (skip.has(c.id)) {
+        skipped++; // 已決定不回(收尾語/垃圾/亂碼),略過不再顯示
+        continue;
+      }
+      // 去掉開頭 IG 自動帶的 @本帳號,拿到真正內容(可能是空/貼圖、表情、或文字)
+      const cleanText = SELF ? (c.text || '').replace(new RegExp('@' + SELF, 'ig'), '').trim() : (c.text || '');
+      // 「回覆對象是我們自己(含你置頂的留言、收官語、引導提問)」→ 對我們的直接互動,一律要回(連貼圖/表情都回)。
+      const isReplyToUs = SELF && parent === SELF;
+      if (!isReplyToUs && SELF && (c.text || '').toLowerCase().includes('@' + SELF) && isEmojiOnly(cleanText)) {
+        // 只有「在別人自己的留言串裡回我們的回覆、又只剩表情」→ 愛心反覆,讓對話自然結束。
+        ownSkipped++;
         continue;
       }
       const entry = {
         id: c.id,
         username: c.username,
-        text: c.text || '',
+        text: cleanText,
         timestamp: c.timestamp,
         like_count: c.like_count ?? 0,
       };
-      if (isEmojiOnly(c.text)) emojiOnly.push(entry);
+      if (isEmojiOnly(cleanText)) emojiOnly.push(entry);
       else pending.push(entry);
     }
 
@@ -159,7 +201,7 @@ async function getPostMeta(id) {
       post_permalink: post.permalink,
       fetched_at: new Date().toISOString(),
       stats: {
-        total_comments: allComments.length,
+        total_comments: flat.length,
         already_replied: skipped,
         pending: pending.length,
         emoji_only: emojiOnly.length,
@@ -187,7 +229,7 @@ async function getPostMeta(id) {
     console.log('');
     console.log(`✅ 已寫入 ${outPath}`);
     console.log(`   貼文說明  : ${(post.caption || '(無)').replace(/\s+/g, ' ').slice(0, 80)}`);
-    console.log(`   API 抓到  : ${allComments.length} 則`);
+    console.log(`   API 抓到  : ${flat.length} 則(含回覆串)`);
     console.log(`   已回過   : ${skipped} 則`);
     console.log(`   待回覆   : ${pending.length} 則`);
     console.log(`   純表情符號: ${emojiOnly.length} 則(列在 emoji_only,自己手動處理)`);

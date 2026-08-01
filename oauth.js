@@ -23,7 +23,13 @@ const SCOPES = [
   'pages_read_engagement',
   'instagram_basic',
   'instagram_manage_comments',
+  'instagram_manage_insights',   // 選用:讀取貼文成效數據(insights)
+  'instagram_content_publish',   // 選用:透過 API 發佈貼文
   'business_management',
+  // ⚠️ 想加「回覆 FB 粉專留言」功能時,再解開下面兩個;
+  //    但必須先在 Meta App 後台(應用程式審查 → 權限與功能)開通,否則會 Invalid Scopes 導致整個授權失敗:
+  // 'pages_read_user_content',   // 讀 FB 粉專粉絲留言
+  // 'pages_manage_engagement',   // 回覆 FB 粉專留言
 ];
 const V = 'v22.0';
 

@@ -3,9 +3,14 @@
 
 # ── 運作產生的資料(含第三方留言者個資)/ runtime data (contains commenters' PII) ──
 pending.json
+pending_sweep.json
 replies.json
 replied.json
 processed_media.json
+
+# ── 個人略過名單(含留言者帳號/備註,絕不上傳;格式範本見 skip.example.json)──
+# ── personal skip list (contains commenter handles/notes — never commit) ──
+skip.json
 
 # ── 相依套件 / dependencies ──
 node_modules/

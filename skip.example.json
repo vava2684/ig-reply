@@ -1,0 +1,6 @@
+{
+  "_README": "決定「不回」的留言 id 清單。複製此檔為 skip.json 後編輯使用;skip.json 已列入 .gitignore、不會上傳。fetch.js / sweep.js 掃描時會略過這裡列出的留言,不再重複跳出。格式:留言id → 原因備註(備註只給自己看)。",
+  "1111111111111111": "example: spam / 導流連結",
+  "2222222222222222": "example: 亂碼或 bot",
+  "3333333333333333": "example: 收尾語(thank you / de nada)不需再回"
+}

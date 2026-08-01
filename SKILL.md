@@ -22,9 +22,12 @@ ig-reply/
 ├── oauth.js          ← 一次性:走 FB Login 拿 Page Token
 ├── test.js           ← 步驟 A:測試 token 是否有效、列出貼文
 ├── fetch.js          ← 步驟 B:抓某篇貼文的留言
+├── sweep.js          ← 步驟 B(進階):一次掃「所有貼文」的新留言
 ├── reply.js          ← 步驟 D:把回覆送出去
+├── skip.example.json ← 「不回」名單的格式範本(複製成 skip.json 使用)
 ├── replied.json      ← (自動產生)記錄已回過的留言,避免重複
 ├── pending.json      ← (自動產生)fetch.js 寫出,給 Claude 看
+├── pending_sweep.json← (自動產生)sweep.js 寫出
 └── replies.json      ← (你/Claude 填)要送出的回覆,reply.js 會讀
 ```
 
@@ -63,8 +66,24 @@ node test.js
 node fetch.js <media_id>
 ```
 
-程式會抓該篇說明＋所有留言、過濾掉已回過的(依 `replied.json`)、寫到 `pending.json`,
-純表情符號的留言會另外標到 `emoji_only` 清單。
+程式會抓該篇說明＋所有留言(含巢狀回覆)、過濾掉已回過的(依 `replied.json`)以及你放進
+`skip.json` 的「不回」名單,寫到 `pending.json`,純表情符號的留言會另外標到 `emoji_only` 清單。
+
+### 步驟 B(進階):一次掃「所有貼文」的新留言
+
+不想一篇篇 fetch,可以用 sweep 一次掃出所有貼文裡還沒回的新留言:
+
+```bash
+node sweep.js                          # 掃全部歷史貼文
+node sweep.js 2024-01-01T00:00:00+0000 # 只掃某日期之後的貼文(較快)
+```
+
+結果寫到 `pending_sweep.json`(結構同 pending,但把各貼文分組)。一樣會套用
+`replied.json`(已回)與 `skip.json`(不回)兩份名單,不會重複跳出。
+
+> **skip.json(選用)**:想把某些留言標成「已讀不回」(垃圾、亂碼、收尾語),把它們的
+> 留言 id 寫進 `skip.json`(格式見 `skip.example.json`)。fetch.js / sweep.js 掃描時會
+> 自動略過。此檔含你自己的備註,已被 `.gitignore` 擋住、不會上傳。
 
 ### 步驟 C:請 Claude 生成回覆
 
