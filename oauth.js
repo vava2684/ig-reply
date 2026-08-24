@@ -275,7 +275,8 @@ if (!pageToken) {
   }
 }
 if (!pageToken) {
-  console.error('\n❌ 仍拿不到 Page Token。最可能原因:授權時沒勾選「植晴苑」這個粉專,');
+  // Codex PR#1 P2:訊息原本寫死「植晴苑」,別的粉專失敗時會叫人去選一個不相干的粉專
+  console.error(`\n❌ 仍拿不到 Page Token。最可能原因:授權時沒勾選「${target.name}」這個粉專,`);
   console.error('   或你在該粉專沒有管理員角色。請重跑並在同意頁選到該粉專。');
   process.exit(1);
 }
