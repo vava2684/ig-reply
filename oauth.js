@@ -40,6 +40,7 @@ const authUrl =
     redirect_uri: REDIRECT,
     scope: SCOPES.join(','),
     response_type: 'token',
+    auth_type: 'rerequest',
   }).toString();
 
 console.log('🔐 ig-reply — Facebook OAuth 設定工具\n');
@@ -257,12 +258,35 @@ if (withIg.length > 1) {
 
 console.log(`\n✅ 採用:「${target.name}」→ @${target.instagram_business_account.username}`);
 
+// 有些粉專(尤其透過 BM/owned_pages 找到的)在清單裡不會附帶 access_token,
+// 改用粉專 ID 直接去要一次,這是拿 Page Token 最可靠的方式。
+let pageToken = target.access_token;
+if (!pageToken) {
+  console.log('\n⚠️  清單裡沒有 Page Token,改用粉專 ID 直接補抓...');
+  const ptRes = await fetch(
+    `https://graph.facebook.com/${V}/${target.id}?fields=access_token&access_token=${effectiveUserToken}`
+  );
+  const ptData = await ptRes.json();
+  if (ptData.error) {
+    console.error(`   ❌ 直接補抓 Page Token 失敗:${ptData.error.message}`);
+  } else if (ptData.access_token) {
+    pageToken = ptData.access_token;
+    console.log('   ✅ 已直接取得 Page Token');
+  }
+}
+if (!pageToken) {
+  // Codex PR#1 P2:訊息原本寫死「植晴苑」,別的粉專失敗時會叫人去選一個不相干的粉專
+  console.error(`\n❌ 仍拿不到 Page Token。最可能原因:授權時沒勾選「${target.name}」這個粉專,`);
+  console.error('   或你在該粉專沒有管理員角色。請重跑並在同意頁選到該粉專。');
+  process.exit(1);
+}
+
 console.log('\n5️⃣  把資訊寫進 .env...');
 const envPath = path.join(__dirname, '.env');
 let envContent = fs.existsSync(envPath) ? fs.readFileSync(envPath, 'utf8') : '';
 
 const updates = {
-  FB_PAGE_ACCESS_TOKEN: target.access_token,
+  FB_PAGE_ACCESS_TOKEN: pageToken,
   FB_PAGE_ID: target.id,
   IG_BUSINESS_ACCOUNT_ID: target.instagram_business_account.id,
   IG_USERNAME: target.instagram_business_account.username,
